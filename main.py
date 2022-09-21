@@ -33,6 +33,7 @@ def train_test_split(df, test_size=0.2):
     return train_data, test_data
 
 
+
 train, test = train_test_split(hist, test_size=0.2)
 
 
