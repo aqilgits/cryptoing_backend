@@ -56,8 +56,8 @@ def normalise_zero_base(df):
 
 def extract_window_data(df, window_len=5, zero_base=True):
     window_data = []
-    # len(df) is 401 - 10 = 391 // train
-    # len(df) is 99 - 10 = 89 // test
+    # len(df) is 401 - 5 = 396 // train
+    # len(df) is 100 - 5 = 95 // test
     for x in range(len(df) - window_len):
         tmp = df[x: (x + window_len)].copy()
         if zero_base:
@@ -104,10 +104,11 @@ optimizer = 'adam'
 
 train, test, X_train, X_test, y_train, y_test = prepare_data(
     hist, target_col, window_len=window_len, zero_base=zero_base, test_size=test_size)
-print(X_train)
+
 model = build_lstm_model(
     X_train, output_size=1, neurons=lstm_neurons, dropout=dropout, loss=loss,
     optimizer=optimizer)
+    
 history = model.fit(
     X_train, y_train, validation_data=(X_test, y_test), epochs=epochs, batch_size=batch_size, verbose=1, shuffle=True)
 
@@ -127,6 +128,6 @@ print(R2)
 preds = test[target_col].values[:-window_len] * (preds + 1)
 preds = pd.Series(index=targets.index, data=preds)
 print(preds)
-# line_plot(targets, preds, 'actual', 'prediction', lw=3, xlabel='price[USD]')
+line_plot(targets, preds, 'actual', 'prediction', lw=3, xlabel='price[USD]')
 
 # plt.show()
