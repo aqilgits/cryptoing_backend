@@ -14,7 +14,7 @@ from sklearn.metrics import r2_score
 
 # retrieve dataset from comparecrypto API
 endpoint = 'https://min-api.cryptocompare.com/data/histoday'
-res = requests.get(endpoint + '?fsym=BNB&tsym=USD&limit=500')
+res = requests.get(endpoint + '?fsym=BTC&tsym=USD&limit=500')
 hist = pd.DataFrame(json.loads(res.content)['Data'])
 hist = hist.set_index('time')
 hist.index = pd.to_datetime(hist.index, unit='s')
@@ -104,7 +104,7 @@ optimizer = 'adam'
 
 train, test, X_train, X_test, y_train, y_test = prepare_data(
     hist, target_col, window_len=window_len, zero_base=zero_base, test_size=test_size)
-
+print(X_train)
 model = build_lstm_model(
     X_train, output_size=1, neurons=lstm_neurons, dropout=dropout, loss=loss,
     optimizer=optimizer)
@@ -126,6 +126,7 @@ print(R2)
 
 preds = test[target_col].values[:-window_len] * (preds + 1)
 preds = pd.Series(index=targets.index, data=preds)
-line_plot(targets, preds, 'actual', 'prediction', lw=3, xlabel='price[USD]')
+print(preds)
+# line_plot(targets, preds, 'actual', 'prediction', lw=3, xlabel='price[USD]')
 
-plt.show()
+# plt.show()
