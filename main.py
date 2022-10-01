@@ -130,4 +130,4 @@ preds = pd.Series(index=targets.index, data=preds)
 print(preds)
 line_plot(targets, preds, 'actual', 'prediction', lw=3, xlabel='price[USD]')
 
-# plt.show()
+plt.show()
