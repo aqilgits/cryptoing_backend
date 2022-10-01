@@ -19,6 +19,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
+crypto = ["BTC", "ETH", "ADA", "DOGE", "XRP"]
+
 endpoint = 'https://min-api.cryptocompare.com/data/histoday'
 res = requests.get(endpoint + '?fsym=BNB&tsym=USD&limit=500')
 hist = pd.DataFrame(json.loads(res.content)['Data'])
@@ -32,7 +34,7 @@ prediction_day = 1
 
 hist['Future_price'] = hist[['close']]
 hists = hist[['high','low','volumefrom', 'volumeto','open','Future_price']]
-print(hists)
+# print(hists)
 
 df = hists.copy()
 X = np.array(df[df.columns])
@@ -53,8 +55,7 @@ model = create_model(best_model)
 unseen_predictions = predict_model(model, data = test_data)
 unseen_predictions = unseen_predictions.append({'high' : np.nan, 'low' : np.nan, 'volumefrom' : np.nan, 'Future_price' : np.nan, 'prediction_label' : np.nan},ignore_index = True)
 unseen_predictions['prediction_price']=unseen_predictions[['prediction_label']].shift(prediction_day)
-print('unseen prediction are')
-print(unseen_predictions['prediction_price'])
+# print(unseen_predictions['prediction_price'])
 
 def line_plot(line1, line2, label1=None, label2=None, title='', lw=2, xlabel=None, ylabel=None):
     fig, ax = plt.subplots(1, figsize=(13, 7))
@@ -66,30 +67,73 @@ def line_plot(line1, line2, label1=None, label2=None, title='', lw=2, xlabel=Non
     ax.set_ylabel(ylabel, fontsize=14)
 line_plot(unseen_predictions['Future_price'], unseen_predictions['prediction_price'],'actual','prediction', lw=3, xlabel='price[USD]')
 line_plot(unseen_predictions['Future_price'], unseen_predictions['prediction_label'],'actual','prediction', lw=3, xlabel='price[USD]')
-plt.show()
+# plt.show()
+
+
 
 # databse models
 class btc(db.Model):
     __tablename__ = 'btc'
+    index = Column(Integer, primary_key=True)
     prediction_price = Column(Float)
     price = Column(Float)
 class eth(db.Model):
     __tablename__ = 'eth'
+    index = Column(Integer, primary_key=True)
     prediction_price = Column(Float)
     price = Column(Float)
 class ada(db.Model):
     __tablename__ = 'ada'
+    index = Column(Integer, primary_key=True)
     prediction_price = Column(Float)
     price = Column(Float)
 class doge(db.Model):
     __tablename__ = 'doge'
+    index = Column(Integer, primary_key=True)
     prediction_price = Column(Float)
     price = Column(Float)
-class ltc(db.Model):
+class xrp(db.Model):
     __tablename__ = 'ltc'
+    index = Column(Integer, primary_key=True)
     prediction_price = Column(Float)
     price = Column(Float)
 
+class Btc(ma.Schema):
+    class Meta:
+        fields = ('preds', 'price')
+class Eth(ma.Schema):
+    class Meta:
+        fields = ('preds', 'price')
+class Ada(ma.Schema):
+    class Meta:
+        fields = ('preds', 'price')
+class Doge(ma.Schema):
+    class Meta:
+        fields = ('preds', 'price')
+class Xrp(ma.Schema):
+    class Meta:
+        fields = ('preds', 'price')
+
+
+btc_scheme = Btc()
+btc_scheme = Btc(many=True)
+eth_scheme = Eth()
+eth_scheme = Eth(many=True)
+ada_scheme = Ada()
+ada_scheme = Ada(many=True)
+doge_scheme = Doge()
+doge_scheme = Doge(many=True)
+xrp_scheme = Xrp()
+xrp_scheme = Xrp(many=True)
+
+prediction_price = 12344
+price = 123444
+latest_price = btc(index=1,
+prediction_price=prediction_price,
+price=price)
+
+db.session.add(latest_price)
+db.session.commit()
 
 if __name__ == '__main__':
     app.run()
