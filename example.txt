@@ -1,0 +1,23 @@
+for x in unseen_predictions['prediction_price']:
+    num = index
+    prediction_price = x
+    price = unseen_predictions['Future_price'][index]
+    if crypto == 'BTC':
+        latest_price = btc(num=num,
+        prediction_price=prediction_price,
+        price=price)
+    db.session.add(latest_price)
+    db.session.commit()
+    index = index+1
+
+def line_plot(line1, line2, label1=None, label2=None, title='', lw=2, xlabel=None, ylabel=None):
+    fig, ax = plt.subplots(1, figsize=(13, 7))
+    ax.plot(line1, label=label1, linewidth=lw)
+    ax.plot(line2, label=label2, linewidth=lw)
+    ax.set_ylabel(xlabel, fontsize=14)
+    ax.set_title(title, fontsize=16)
+    ax.legend(loc='best', fontsize=16)
+    ax.set_ylabel(ylabel, fontsize=14)
+line_plot(unseen_predictions['Future_price'], unseen_predictions['prediction_price'],'actual','prediction', lw=3, xlabel='price[USD]')
+line_plot(unseen_predictions['Future_price'], unseen_predictions['prediction_label'],'actual','prediction', lw=3, xlabel='price[USD]')
+plt.show()

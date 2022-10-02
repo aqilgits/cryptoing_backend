@@ -113,49 +113,53 @@ for crypto in cryptos:
     unseen_predictions = unseen_predictions.replace(np.nan, 0)
     print(crypto)
     print(unseen_predictions)
+    
+    if crypto == 'BTC':
+        for x in unseen_predictions['prediction_price']:
+            num = index
+            index_data = btc.query.filter_by(num=num).first()
+            if index_data:
+                index_data.prediction_price = x
+                index_data.price = unseen_predictions['Future_price'][index]
+            db.session.commit()
+            index = index+1
 
-    for x in unseen_predictions['prediction_price']:
-        num = index
-        prediction_price = x
-        price = unseen_predictions['Future_price'][index]
-        if crypto == 'BTC':
-            latest_price = btc(num=num,
-            prediction_price=prediction_price,
-            price=price)
-        elif crypto == 'ETH':
-            latest_price = eth(num=num,
-            prediction_price=prediction_price,
-            price=price)
-        elif crypto == 'ADA':
-            latest_price = ada(num=num,
-            prediction_price=prediction_price,
-            price=price)
-        elif crypto == 'DOGE':
-            latest_price = doge(num=num,
-            prediction_price=prediction_price,
-            price=price)
-        else:
-            latest_price = xrp(num=num,
-            prediction_price=prediction_price,
-            price=price)
-
-        db.session.add(latest_price)
-        db.session.commit()
-        index = index+1
-
-
-# # def line_plot(line1, line2, label1=None, label2=None, title='', lw=2, xlabel=None, ylabel=None):
-# #     fig, ax = plt.subplots(1, figsize=(13, 7))
-# #     ax.plot(line1, label=label1, linewidth=lw)
-# #     ax.plot(line2, label=label2, linewidth=lw)
-# #     ax.set_ylabel(xlabel, fontsize=14)
-# #     ax.set_title(title, fontsize=16)
-# #     ax.legend(loc='best', fontsize=16)
-# #     ax.set_ylabel(ylabel, fontsize=14)
-# # line_plot(unseen_predictions['Future_price'], unseen_predictions['prediction_price'],'actual','prediction', lw=3, xlabel='price[USD]')
-# # line_plot(unseen_predictions['Future_price'], unseen_predictions['prediction_label'],'actual','prediction', lw=3, xlabel='price[USD]')
-# # plt.show()
-
+    elif crypto == 'ETH':
+        for x in unseen_predictions['prediction_price']:
+            num = index
+            index_data = eth.query.filter_by(num=num).first()
+            if index_data:
+                index_data.prediction_price = x
+                index_data.price = unseen_predictions['Future_price'][index]
+            db.session.commit()
+            index = index+1
+    elif crypto == 'ADA':
+        for x in unseen_predictions['prediction_price']:
+            num = index
+            index_data = ada.query.filter_by(num=num).first()
+            if index_data:
+                index_data.prediction_price = x
+                index_data.price = unseen_predictions['Future_price'][index]
+            db.session.commit()
+            index = index+1
+    elif crypto == 'DOGE':
+        for x in unseen_predictions['prediction_price']:
+            num = index
+            index_data = doge.query.filter_by(num=num).first()
+            if index_data:
+                index_data.prediction_price = x
+                index_data.price = unseen_predictions['Future_price'][index]
+            db.session.commit()
+            index = index+1
+    else:
+        for x in unseen_predictions['prediction_price']:
+            num = index
+            index_data = xrp.query.filter_by(num=num).first()
+            if index_data:
+                index_data.prediction_price = x
+                index_data.price = unseen_predictions['Future_price'][index]
+            db.session.commit()
+            index = index+1
 
 if __name__ == '__main__':
     app.run()
