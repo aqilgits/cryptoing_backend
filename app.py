@@ -1,7 +1,3 @@
-from ctypes.wintypes import DOUBLE
-import string
-from tkinter import DoubleVar
-from tokenize import Double, Double3
 import requests
 import json
 import pandas as pd
