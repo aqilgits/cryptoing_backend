@@ -1,3 +1,4 @@
+import os
 import requests
 import json
 import pandas as pd
@@ -163,5 +164,6 @@ def crypto_data(crypto_name:str):
     
     return jsonify(result)
 
+port = int(os.environ.get('PORT', 5000))
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True,host='localhost', port=port)
