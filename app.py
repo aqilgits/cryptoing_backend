@@ -1,5 +1,7 @@
+from ctypes.wintypes import DOUBLE
 import string
-from tokenize import Double
+from tkinter import DoubleVar
+from tokenize import Double, Double3
 import requests
 import json
 import pandas as pd
@@ -47,32 +49,12 @@ class xrp(db.Model):
     prediction_price = Column(Float)
     price = Column(Float)
 
-class Btc(ma.Schema):
-    class Meta:
-        fields = ('num','prediction_price', 'price')
-class Eth(ma.Schema):
-    class Meta:
-        fields = ('num','prediction_price', 'price')
-class Ada(ma.Schema):
-    class Meta:
-        fields = ('num','prediction_price', 'price')
-class Doge(ma.Schema):
-    class Meta:
-        fields = ('num','prediction_price', 'price')
-class Xrp(ma.Schema):
+class Price(ma.Schema):
     class Meta:
         fields = ('num','prediction_price', 'price')
 
-btc_scheme = Btc()
-btcs_scheme = Btc(many=True)
-eth_scheme = Eth()
-eths_scheme = Eth(many=True)
-ada_scheme = Ada()
-adas_scheme = Ada(many=True)
-doge_scheme = Doge()
-doges_scheme = Doge(many=True)
-xrp_scheme = Xrp()
-xrps_scheme = Xrp(many=True)
+price_scheme = Price()
+prices_scheme = Price(many=True)
 
 cryptos = ["BTC", "ETH", "ADA", "DOGE", "XRP"]
 for crypto in cryptos:
@@ -112,8 +94,8 @@ for crypto in cryptos:
     unseen_predictions = unseen_predictions.append({'high' : 0, 'low' : 0, 'volumefrom' : 0, 'Future_price' : 0, 'prediction_label' : 0},ignore_index = True)
     unseen_predictions['prediction_price']=unseen_predictions[['prediction_label']].shift(prediction_day)
     unseen_predictions = unseen_predictions.replace(np.nan, 0)
-    # print(crypto)
-    # print(unseen_predictions)
+    print(crypto)
+    print(unseen_predictions)
     
     if crypto == 'BTC':
         for x in unseen_predictions['prediction_price']:
@@ -165,23 +147,23 @@ for crypto in cryptos:
 def crypto_data(crypto_name:str):
     if crypto_name == 'BTC':
         crypto_data = db.session.execute(db.select(btc).order_by(btc.num)).scalars()
-        result = btcs_scheme.dump(crypto_data)
+        result = prices_scheme.dump(crypto_data)
     
     elif crypto_name == 'ETH':
         crypto_data = db.session.execute(db.select(eth).order_by(eth.num)).scalars()
-        result = eths_scheme.dump(crypto_data)
+        result = prices_scheme.dump(crypto_data)
 
     elif crypto_name == 'ADA':
         crypto_data = db.session.execute(db.select(ada).order_by(ada.num)).scalars()
-        result = adas_scheme.dump(crypto_data)
+        result = prices_scheme.dump(crypto_data)
 
     elif crypto_name == 'DOGE':
         crypto_data = db.session.execute(db.select(doge).order_by(doge.num)).scalars()
-        result = doges_scheme.dump(crypto_data)
+        result = prices_scheme.dump(crypto_data)
 
     else:
         crypto_data = db.session.execute(db.select(xrp).order_by(xrp.num)).scalars()
-        result = xrps_scheme.dump(crypto_data)
+        result = prices_scheme.dump(crypto_data)
     
     return jsonify(result)
 
