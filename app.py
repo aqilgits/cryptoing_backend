@@ -13,7 +13,7 @@ from flask_marshmallow import Marshmallow
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root@localhost/crypto"
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:loqil1509.@localhost/crypto"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 db = SQLAlchemy(app)
