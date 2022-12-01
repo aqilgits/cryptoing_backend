@@ -33,6 +33,11 @@ for x in range(76):
     val = [(x, 0, 0)]
     mycursor.executemany(sql, val)
     mydb.commit()
+for x in range(20):
+    sql = "INSERT INTO news (num, sentiment, title, url) VALUES (%s, %s, %s, %s)"
+    val = [(x, 0, 0,0)]
+    mycursor.executemany(sql, val)
+    mydb.commit()
 
 
     
