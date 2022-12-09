@@ -101,8 +101,8 @@ for crypto in cryptos:
     unseen_predictions = unseen_predictions.append({'high' : 0, 'low' : 0, 'volumefrom' : 0, 'Future_price' : 0, 'prediction_label' : 0},ignore_index = True)
     unseen_predictions['prediction_price']=unseen_predictions[['prediction_label']].shift(prediction_day)
     unseen_predictions = unseen_predictions.replace(np.nan, 0)
-    print(crypto)
-    print(unseen_predictions)
+    # print(crypto)
+    # print(unseen_predictions)
     
     if crypto == 'BTC':
         for x in unseen_predictions['prediction_price']:
@@ -151,7 +151,7 @@ for crypto in cryptos:
             index = index+1
 
 # sentiment analysis
-url = "https://crypto-news11.p.rapidapi.com/cryptonews/bitcoin"
+url = "https://crypto-news11.p.rapidapi.com/cryptonews/altcoin"
 
 querystring = {"max_articles":"20","last_n_hours":"48","top_n_keywords":"10"}
 
@@ -170,22 +170,22 @@ for article_info in response_info['articles']:
     articles.append([article_info['date'],  article_info['sentiment']['polarity'], article_info['sentiment']['subjectivity'], article_info['source'], article_info['subject'],  article_info['text'], article_info['title'], article_info['url']])
 
 article_df = pd.DataFrame(data=articles, columns=['date', 'polarity', 'subjectivity', 'source', 'subject', 'text', 'title', 'url'])
-print(article_df)
+# print(article_df)
 
 saved_final_sentiment = load_model('Final sentiment model')
 
 unseen_predictions_sentiment = predict_model(saved_final_sentiment, data=article_df)
-print(unseen_predictions_sentiment)
+# print(unseen_predictions_sentiment)
 count = 0
 for x in unseen_predictions_sentiment['prediction_label']:
-            num = count
-            index_data = news.query.filter_by(num=num).first()
-            if index_data:
-                index_data.sentiment = x
-                index_data.title = article_df['title'][count]
-                index_data.url = article_df['url'][count]
-            db.session.commit()
-            count = count+1
+    num = count
+    index_data = news.query.filter_by(num=num).first()
+    if index_data:
+        index_data.sentiment = x
+        index_data.title = article_df['title'][count]
+        index_data.url = article_df['url'][count]
+    db.session.commit()
+    count = count+1
 
 @app.route('/crypto/<string:crypto_name>',methods=['GET'])
 def crypto_data(crypto_name:str):
@@ -214,6 +214,13 @@ def crypto_data(crypto_name:str):
 
 @app.route('/news',methods=['GET'])
 def crypto_news():
+    crypto_news = db.session.execute(db.select(news).order_by(news.num)).scalars()
+    result = news_scheme.dump(crypto_news)
+
+    return jsonify(result)
+
+@app.route('/news/percentage',methods=['GET'])
+def crypto_percentage(): 
     crypto_news = db.session.execute(db.select(news).order_by(news.num)).scalars()
     result = news_scheme.dump(crypto_news)
 
