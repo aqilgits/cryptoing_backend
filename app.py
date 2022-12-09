@@ -187,6 +187,7 @@ for x in unseen_predictions_sentiment['prediction_label']:
     db.session.commit()
     count = count+1
 
+
 @app.route('/crypto/<string:crypto_name>',methods=['GET'])
 def crypto_data(crypto_name:str):
     if crypto_name == 'BTC':
@@ -223,8 +224,27 @@ def crypto_news():
 def crypto_percentage(): 
     crypto_news = db.session.execute(db.select(news).order_by(news.num)).scalars()
     result = news_scheme.dump(crypto_news)
-
-    return jsonify(result)
+    sentiment ={}
+    sentimentlist =[]
+    count_positive = 0
+    count_negative = 0
+    count_neutral = 0
+    for x in result:
+        if result[x['num']]['sentiment'] == 'positive':
+            count_positive = count_positive +1
+        if result[x['num']]['sentiment'] == 'negative':
+            count_negative = count_negative +1
+        if result[x['num']]['sentiment'] == 'neutral':
+            count_neutral = count_neutral +1
+    count_positive = (count_positive / 20)*100
+    count_negative = (count_negative / 20)*100
+    count_neutral = (count_neutral / 20)*100
+    sentiment['positive']=round(count_positive)
+    sentiment['negative']=round(count_negative)
+    sentiment['neutral']=round(count_neutral)
+    sentimentlist.append(sentiment)
+    print(sentiment)
+    return jsonify(sentimentlist)
 
 port = int(os.environ.get('PORT', 5000))
 if __name__ == '__main__':
