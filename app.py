@@ -95,7 +95,7 @@ for crypto in cryptos:
 
     test_data = pd.DataFrame(x_test, columns = df.columns)
 
-    saved_final_prediction = load_model('Final prediction model')
+    saved_final_prediction = load_model('Final prediction model'+crypto)
 
     unseen_predictions = predict_model(saved_final_prediction, data = test_data)
     unseen_predictions = unseen_predictions.append({'high' : 0, 'low' : 0, 'volumefrom' : 0, 'Future_price' : 0, 'prediction_label' : 0},ignore_index = True)

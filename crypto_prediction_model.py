@@ -7,7 +7,6 @@ from sklearn.model_selection import train_test_split
 
 cryptos = ["BTC", "ETH", "ADA", "DOGE", "XRP"]
 for crypto in cryptos:
-    index = 0
     endpoint = 'https://min-api.cryptocompare.com/data/histoday'
     res = requests.get(endpoint + '?fsym='+crypto+'&tsym=USD&limit=500')
     hist = pd.DataFrame(json.loads(res.content)['Data'])
@@ -37,5 +36,5 @@ for crypto in cryptos:
     regression_setup = setup(data=train_data, target= 'Future_price', session_id = 123, use_gpu = True)
     best_model = compare_models(sort='r2')
     model = create_model(best_model)
+    save_model(model,'Final prediction model'+crypto)
     
-save_model(model,'Final prediction model')
