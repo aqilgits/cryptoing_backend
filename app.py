@@ -10,6 +10,8 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String, Float
 from flask_marshmallow import Marshmallow
+from requests import Request, Session
+from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 
 app = Flask(__name__)
 
@@ -186,7 +188,6 @@ for x in unseen_predictions_sentiment['prediction_label']:
         index_data.url = article_df['url'][count]
     db.session.commit()
     count = count+1
-
 
 @app.route('/crypto/<string:crypto_name>',methods=['GET'])
 def crypto_data(crypto_name:str):
