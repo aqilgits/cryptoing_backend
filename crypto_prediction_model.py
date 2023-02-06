@@ -36,5 +36,6 @@ for crypto in cryptos:
     regression_setup = setup(data=train_data, target= 'Future_price', session_id = 123, use_gpu = True)
     best_model = compare_models(sort='r2')
     model = create_model(best_model)
+    # plot_model(model, plot = 'error')
     save_model(model,'Final prediction model'+crypto)
     

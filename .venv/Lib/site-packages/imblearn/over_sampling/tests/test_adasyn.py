@@ -3,12 +3,9 @@
 #          Christos Aridas
 # License: MIT
 
-import pytest
 import numpy as np
-
-from sklearn.utils._testing import assert_allclose
-from sklearn.utils._testing import assert_array_equal
 from sklearn.neighbors import NearestNeighbors
+from sklearn.utils._testing import assert_allclose, assert_array_equal
 
 from imblearn.over_sampling import ADASYN
 
@@ -122,19 +119,3 @@ def test_ada_fit_resample_nn_obj():
     )
     assert_allclose(X_resampled, X_gt, rtol=R_TOL)
     assert_array_equal(y_resampled, y_gt)
-
-
-@pytest.mark.parametrize(
-    "adasyn_params, err_msg",
-    [
-        (
-            {"sampling_strategy": {0: 9, 1: 12}},
-            "No samples will be generated.",
-        ),
-        ({"n_neighbors": "rnd"}, "has to be one of"),
-    ],
-)
-def test_adasyn_error(adasyn_params, err_msg):
-    adasyn = ADASYN(**adasyn_params)
-    with pytest.raises(ValueError, match=err_msg):
-        adasyn.fit_resample(X, Y)

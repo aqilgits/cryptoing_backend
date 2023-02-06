@@ -1,14 +1,15 @@
 """Test the module cluster centroids."""
 from collections import Counter
 
-import pytest
 import numpy as np
+import pytest
 from scipy import sparse
-
 from sklearn.cluster import KMeans
 from sklearn.datasets import make_classification
+from sklearn.linear_model import LogisticRegression
 
 from imblearn.under_sampling import ClusterCentroids
+from imblearn.utils.testing import _CustomClusterer
 
 RND_SEED = 0
 X = np.array(
@@ -32,12 +33,14 @@ R_TOL = 1e-4
 @pytest.mark.parametrize(
     "X, expected_voting", [(X, "soft"), (sparse.csr_matrix(X), "hard")]
 )
+@pytest.mark.filterwarnings("ignore:The default value of `n_init` will change")
 def test_fit_resample_check_voting(X, expected_voting):
     cc = ClusterCentroids(random_state=RND_SEED)
     cc.fit_resample(X, Y)
     assert cc.voting_ == expected_voting
 
 
+@pytest.mark.filterwarnings("ignore:The default value of `n_init` will change")
 def test_fit_resample_auto():
     sampling_strategy = "auto"
     cc = ClusterCentroids(sampling_strategy=sampling_strategy, random_state=RND_SEED)
@@ -46,6 +49,7 @@ def test_fit_resample_auto():
     assert y_resampled.shape == (6,)
 
 
+@pytest.mark.filterwarnings("ignore:The default value of `n_init` will change")
 def test_fit_resample_half():
     sampling_strategy = {0: 3, 1: 6}
     cc = ClusterCentroids(sampling_strategy=sampling_strategy, random_state=RND_SEED)
@@ -54,6 +58,7 @@ def test_fit_resample_half():
     assert y_resampled.shape == (9,)
 
 
+@pytest.mark.filterwarnings("ignore:The default value of `n_init` will change")
 def test_multiclass_fit_resample():
     y = Y.copy()
     y[5] = 2
@@ -68,7 +73,7 @@ def test_multiclass_fit_resample():
 
 def test_fit_resample_object():
     sampling_strategy = "auto"
-    cluster = KMeans(random_state=RND_SEED)
+    cluster = KMeans(random_state=RND_SEED, n_init=1)
     cc = ClusterCentroids(
         sampling_strategy=sampling_strategy,
         random_state=RND_SEED,
@@ -83,7 +88,7 @@ def test_fit_resample_object():
 def test_fit_hard_voting():
     sampling_strategy = "auto"
     voting = "hard"
-    cluster = KMeans(random_state=RND_SEED)
+    cluster = KMeans(random_state=RND_SEED, n_init=1)
     cc = ClusterCentroids(
         sampling_strategy=sampling_strategy,
         random_state=RND_SEED,
@@ -98,28 +103,7 @@ def test_fit_hard_voting():
         assert np.any(np.all(x == X, axis=1))
 
 
-@pytest.mark.parametrize(
-    "cluster_centroids_params, err_msg",
-    [
-        ({"estimator": "rnd"}, "has to be a KMeans clustering"),
-        ({"voting": "unknown"}, "needs to be one of"),
-    ],
-)
-def test_fit_resample_error(cluster_centroids_params, err_msg):
-    cc = ClusterCentroids(**cluster_centroids_params)
-    with pytest.raises(ValueError, match=err_msg):
-        cc.fit_resample(X, Y)
-
-
-def test_cluster_centroids_n_jobs():
-    # check that we deprecate the `n_jobs` parameter.
-    cc = ClusterCentroids(n_jobs=1)
-    with pytest.warns(FutureWarning) as record:
-        cc.fit_resample(X, Y)
-    assert len(record) == 1
-    assert "'n_jobs' was deprecated" in record[0].message.args[0]
-
-
+@pytest.mark.filterwarnings("ignore:The default value of `n_init` will change")
 def test_cluster_centroids_hard_target_class():
     # check that the samples selecting by the hard voting corresponds to the
     # targeted class
@@ -152,3 +136,28 @@ def test_cluster_centroids_hard_target_class():
         for minority_sample in X_minority_class
     ]
     assert sum(sample_from_minority_in_majority) == 0
+
+
+def test_cluster_centroids_custom_clusterer():
+    clusterer = _CustomClusterer()
+    cc = ClusterCentroids(estimator=clusterer, random_state=RND_SEED)
+    cc.fit_resample(X, Y)
+    assert isinstance(cc.estimator_.cluster_centers_, np.ndarray)
+
+    clusterer = _CustomClusterer(expose_cluster_centers=False)
+    cc = ClusterCentroids(estimator=clusterer, random_state=RND_SEED)
+    err_msg = (
+        "`estimator` should be a clustering estimator exposing a fitted parameter "
+        "`cluster_centers_`."
+    )
+    with pytest.raises(RuntimeError, match=err_msg):
+        cc.fit_resample(X, Y)
+
+    clusterer = LogisticRegression()
+    cc = ClusterCentroids(estimator=clusterer, random_state=RND_SEED)
+    err_msg = (
+        "`estimator` should be a clustering estimator exposing a parameter "
+        "`n_clusters` and a fitted parameter `cluster_centers_`."
+    )
+    with pytest.raises(ValueError, match=err_msg):
+        cc.fit_resample(X, Y)

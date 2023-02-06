@@ -42,6 +42,7 @@ best_model = compare_models()
 model = create_model(best_model)
 
 tuned_model = tune_model(best_model)
+# plot_model(tuned_model, plot = 'error')
 
 final_model = finalize_model(tuned_model)
 save_model(final_model,'Final sentiment model')

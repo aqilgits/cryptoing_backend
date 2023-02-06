@@ -14,8 +14,9 @@ from requests import Request, Session
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 
 app = Flask(__name__)
+app.app_context().push()
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:loqil1509.@localhost/crypto"
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:Loqilsemangat00.@localhost/crypto"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 db = SQLAlchemy(app)

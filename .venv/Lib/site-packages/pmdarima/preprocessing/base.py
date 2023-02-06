@@ -33,10 +33,21 @@ class BaseTransformer(BaseEstimator, TransformerMixin, metaclass=abc.ABCMeta):
         """Validate input"""
         # Do not force finite, since a transformer's goal may be imputation.
         if y is not None:
-            y = check_endog(y, dtype=DTYPE, copy=True, force_all_finite=False)
+            y = check_endog(
+                y,
+                dtype=DTYPE,
+                copy=True,
+                force_all_finite=False,
+                preserve_series=False,
+            )
 
         if X is not None:
-            X = check_exog(X, dtype=None, copy=True, force_all_finite=False)
+            X = check_exog(
+                X,
+                dtype=None,
+                copy=True,
+                force_all_finite=False,
+            )
         return y, X
 
     def fit_transform(self, y, X=None, **kwargs):
@@ -53,11 +64,11 @@ class BaseTransformer(BaseEstimator, TransformerMixin, metaclass=abc.ABCMeta):
         **kwargs : keyword args
             Keyword arguments required by the transform function.
         """
-        self.fit(y, X, **kwargs)  # TODO: eventually do not pass kwargs to fit
+        self.fit(y, X)
         return self.transform(y, X, **kwargs)
 
     @abc.abstractmethod
-    def fit(self, y, X, **kwargs):  # TODO: eventually remove kwargs from fit
+    def fit(self, y, X):
         """Fit the transformer
 
         The purpose of the ``fit`` method is to learn a set of statistics or

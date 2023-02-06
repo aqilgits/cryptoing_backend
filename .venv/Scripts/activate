@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="E:\PROGRAMMING\FYP\cryptoing_backend\.venv"
+VIRTUAL_ENV="c:\Users\lukma\Desktop\cryptoing_backend\.venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

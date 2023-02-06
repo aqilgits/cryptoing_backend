@@ -3,12 +3,12 @@
 #          Christos Aridas
 # License: MIT
 
+import numpy as np
 import pytest
+from sklearn.neighbors._base import KNeighborsMixin
 
 from imblearn.base import SamplerMixin
-from imblearn.utils.testing import all_estimators
-
-from imblearn.utils.testing import warns
+from imblearn.utils.testing import _CustomNearestNeighbors, all_estimators
 
 
 def test_all_estimators():
@@ -27,35 +27,23 @@ def test_all_estimators():
         all_estimators(type_filter=type_filter)
 
 
-@pytest.mark.filterwarnings("ignore:The warns function is deprecated in 0.8")
-def test_warns():
-    import warnings
+def test_custom_nearest_neighbors():
+    """Check that our custom nearest neighbors can be used for our internal
+    duck-typing."""
 
-    with warns(UserWarning, match=r"must be \d+$"):
-        warnings.warn("value must be 42", UserWarning)
+    neareat_neighbors = _CustomNearestNeighbors(n_neighbors=3)
 
-    with pytest.raises(AssertionError, match="pattern not found"):
-        with warns(UserWarning, match=r"must be \d+$"):
-            warnings.warn("this is not here", UserWarning)
+    assert not isinstance(neareat_neighbors, KNeighborsMixin)
+    assert hasattr(neareat_neighbors, "kneighbors")
+    assert hasattr(neareat_neighbors, "kneighbors_graph")
 
-    with warns(UserWarning, match=r"aaa"):
-        warnings.warn("cccccccccc", UserWarning)
-        warnings.warn("bbbbbbbbbb", UserWarning)
-        warnings.warn("aaaaaaaaaa", UserWarning)
+    rng = np.random.RandomState(42)
+    X = rng.randn(150, 3)
+    y = rng.randint(0, 2, 150)
+    neareat_neighbors.fit(X, y)
 
-    a, b, c = ("aaa", "bbbbbbbbbb", "cccccccccc")
-    expected_msg = r"'{}' pattern not found in \['{}', '{}'\]".format(a, b, c)
-    with pytest.raises(AssertionError, match=expected_msg):
-        with warns(UserWarning, match=r"aaa"):
-            warnings.warn("bbbbbbbbbb", UserWarning)
-            warnings.warn("cccccccccc", UserWarning)
-
-
-# TODO: remove in 0.9
-def test_warns_deprecation():
-    import warnings
-
-    with pytest.warns(None) as record:
-        with warns(UserWarning):
-            warnings.warn("value must be 42")
-    assert "The warns function is deprecated" in str(record[0].message)
+    distances, indices = neareat_neighbors.kneighbors(X)
+    assert distances.shape == (150, 3)
+    assert indices.shape == (150, 3)
+    np.testing.assert_allclose(distances[:, 0], 0.0)
+    np.testing.assert_allclose(indices[:, 0], np.arange(150))
