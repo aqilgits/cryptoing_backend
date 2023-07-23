@@ -12,6 +12,7 @@ from sqlalchemy import Column, Integer, String, Float
 from flask_marshmallow import Marshmallow
 from requests import Request, Session
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
+import matplotlib.pyplot as plt
 
 app = Flask(__name__)
 app.app_context().push()
@@ -97,59 +98,101 @@ for crypto in cryptos:
     train_data = pd.DataFrame(x_train, columns = df.columns)
 
     test_data = pd.DataFrame(x_test, columns = df.columns)
+    test_data.drop(["Future_price"], axis='columns', inplace=True)
 
-    saved_final_prediction = load_model('Final prediction model'+crypto)
+    prevdays =[31,62,103]
+    avghigh = 0
+    avglow = 0
+    avgvolumefrom = 0
+    avgvolumeto = 0
+    avgopen = 0
+    for x in range (1,30):
+        for y in prevdays:
+            # print(test_data.iloc[((len(test_data)-1)+x)-y])
+            high_ofprevMonth = test_data.iloc[((len(test_data)-1)+x)-y]['high']
+            # print(high_ofprevMonth)
+            avghigh = (avghigh + high_ofprevMonth)
+            low_ofprevMonth = test_data.iloc[((len(test_data)-1)+x)-y]['low']
+            avglow = (avglow + low_ofprevMonth)
+            vf_ofprevMonth = test_data.iloc[((len(test_data)-1)+x)-y]['volumefrom']
+            avgvolumefrom = (avgvolumefrom + vf_ofprevMonth)
+            vt_ofprevMonth = test_data.iloc[((len(test_data)-1)+x)-y]['volumeto']
+            avgvolumeto = (avgvolumeto + vt_ofprevMonth)
+            open_ofprevMonth = test_data.iloc[((len(test_data)-1)+x)-y]['open']
+            avgopen = (avgopen + open_ofprevMonth)
+        avghigh = avghigh/len(prevdays)
+        # print(avghigh)
+        avglow = avglow/len(prevdays)
+        avgvolumefrom = avgvolumefrom/len(prevdays)
+        avgvolumeto = avgvolumeto/len(prevdays)
+        avgopen = avgopen/len(prevdays)
+        test_data = test_data.append({'high' : avghigh, 'low' : avglow, 'volumefrom' : avgvolumefrom, 'volumeto' : avgvolumeto, 'open' : avgopen},ignore_index = True)
+
+    saved_final_prediction = load_model('ai models/Final prediction model'+crypto)
 
     unseen_predictions = predict_model(saved_final_prediction, data = test_data)
-    unseen_predictions = unseen_predictions.append({'high' : 0, 'low' : 0, 'volumefrom' : 0, 'Future_price' : 0, 'prediction_label' : 0},ignore_index = True)
-    unseen_predictions['prediction_price']=unseen_predictions[['prediction_label']].shift(prediction_day)
+    # unseen_predictions = unseen_predictions.append({'high' : 0, 'low' : 0, 'volumefrom' : 0, 'Future_price' : 0, 'prediction_label' : 0},ignore_index = True)
+    # unseen_predictions['prediction_price']=unseen_predictions[['prediction_label']].shift(prediction_day)
     unseen_predictions = unseen_predictions.replace(np.nan, 0)
+    print(unseen_predictions.tail(40))
+    # def line_plot(line1, line2, label1=None, label2=None, title='', lw=2, xlabel=None, ylabel=None):
+    #     fig, ax = plt.subplots(1, figsize=(13, 7))
+    #     ax.plot(line1, label=label1, linewidth=lw)
+    #     ax.plot(line2, label=label2, linewidth=lw)
+    #     ax.set_ylabel(xlabel, fontsize=14)
+    #     ax.set_title(title, fontsize=16)
+    #     ax.legend(loc='best', fontsize=16)
+    #     ax.set_ylabel(ylabel, fontsize=14)
+    # line_plot(unseen_predictions['open'].iloc[0:73], unseen_predictions['prediction_price'].iloc[1:],'actual','prediction', lw=3, xlabel='price[USD]')
+    # plt.show()
+    # line_plot(unseen_predictions['open'].iloc[0:73], unseen_predictions['prediction_label'].iloc[1:],'actual','prediction', lw=3, xlabel='price[USD]')
+    # plt.show()
     # print(crypto)
-    # print(unseen_predictions)
+    
     
     if crypto == 'BTC':
-        for x in unseen_predictions['prediction_price']:
+        for x in unseen_predictions['prediction_label']:
             num = index
             index_data = btc.query.filter_by(num=num).first()
             if index_data:
-                index_data.prediction_price = x
-                index_data.price = unseen_predictions['Future_price'][index]
+                index_data.prediction_price = unseen_predictions['prediction_label'][index+28]
+                index_data.price = unseen_predictions['open'][index+28]
             db.session.commit()
             index = index+1
     elif crypto == 'ETH':
-        for x in unseen_predictions['prediction_price']:
+        for x in unseen_predictions['prediction_label']:
             num = index
             index_data = eth.query.filter_by(num=num).first()
             if index_data:
-                index_data.prediction_price = x
-                index_data.price = unseen_predictions['Future_price'][index]
+                index_data.prediction_price = unseen_predictions['prediction_label'][index+28]
+                index_data.price = unseen_predictions['open'][index+28]
             db.session.commit()
             index = index+1
     elif crypto == 'ADA':
-        for x in unseen_predictions['prediction_price']:
+        for x in unseen_predictions['prediction_label']:
             num = index
             index_data = ada.query.filter_by(num=num).first()
             if index_data:
-                index_data.prediction_price = x
-                index_data.price = unseen_predictions['Future_price'][index]
+                index_data.prediction_price = unseen_predictions['prediction_label'][index+28]
+                index_data.price = unseen_predictions['open'][index+28]
             db.session.commit()
             index = index+1
     elif crypto == 'DOGE':
-        for x in unseen_predictions['prediction_price']:
+        for x in unseen_predictions['prediction_label']:
             num = index
             index_data = doge.query.filter_by(num=num).first()
             if index_data:
-                index_data.prediction_price = x
-                index_data.price = unseen_predictions['Future_price'][index]
+                index_data.prediction_price = unseen_predictions['prediction_label'][index+28]
+                index_data.price = unseen_predictions['open'][index+28]
             db.session.commit()
             index = index+1
     else:
-        for x in unseen_predictions['prediction_price']:
+        for x in unseen_predictions['prediction_label']:
             num = index
             index_data = xrp.query.filter_by(num=num).first()
             if index_data:
-                index_data.prediction_price = x
-                index_data.price = unseen_predictions['Future_price'][index]
+                index_data.prediction_price = unseen_predictions['prediction_label'][index+28]
+                index_data.price = unseen_predictions['open'][index+28]
             db.session.commit()
             index = index+1
 
@@ -159,7 +202,7 @@ url = "https://crypto-news11.p.rapidapi.com/cryptonews/altcoin"
 querystring = {"max_articles":"20","last_n_hours":"48","top_n_keywords":"10"}
 
 headers = {
-	"X-RapidAPI-Key": "43ca21b1e1msh81aa2e6f1df42a9p19d28ejsnd155bc5d6652",
+	"X-RapidAPI-Key": "b2cff8e189msh8159eb1f2303fb4p1dfb0fjsnbd35717c4c67",
 	"X-RapidAPI-Host": "crypto-news11.p.rapidapi.com"
 }
 
@@ -175,7 +218,7 @@ for article_info in response_info['articles']:
 article_df = pd.DataFrame(data=articles, columns=['date', 'polarity', 'subjectivity', 'source', 'subject', 'text', 'title', 'url'])
 # print(article_df)
 
-saved_final_sentiment = load_model('Final sentiment model')
+saved_final_sentiment = load_model('ai models/Final sentiment model')
 
 unseen_predictions_sentiment = predict_model(saved_final_sentiment, data=article_df)
 # print(unseen_predictions_sentiment)
