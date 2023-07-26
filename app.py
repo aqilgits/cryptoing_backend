@@ -129,8 +129,9 @@ for crypto in cryptos:
     saved_final_prediction = load_model('ai models/Final prediction model'+crypto)
     print(test_data)
     unseen_predictions = predict_model(saved_final_prediction, data = test_data)
-    unseen_predictions = unseen_predictions.replace(np.nan, 0)
     print(unseen_predictions)
+    unseen_predictions = unseen_predictions.replace(np.nan, 0)
+    
     if crypto == 'BTC':
         for x in unseen_predictions['prediction_label']:
             num = index
