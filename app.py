@@ -127,9 +127,9 @@ for crypto in cryptos:
         test_data = test_data.append({'high' : avghigh, 'low' : avglow, 'volumefrom' : avgvolumefrom, 'volumeto' : avgvolumeto, 'open' : avgopen},ignore_index = True)
 
     saved_final_prediction = load_model('ai models/Final prediction model'+crypto)
-
+    print(test_data)
     unseen_predictions = predict_model(saved_final_prediction, data = test_data)
-    # unseen_predictions = unseen_predictions.replace(np.nan, 0)   
+    unseen_predictions = unseen_predictions.replace(np.nan, 0)
     
     if crypto == 'BTC':
         for x in unseen_predictions['prediction_label']:
