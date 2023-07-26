@@ -1,4 +1,5 @@
 import os
+from waitress import serve
 import requests
 import json
 import pandas as pd
@@ -17,7 +18,7 @@ import matplotlib.pyplot as plt
 app = Flask(__name__)
 app.app_context().push()
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:Loqilsemangat00.@localhost/crypto"
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://cryptohit:Loqilsemangat00.@cryptohitproject.cmrqv61hfhf4.ap-southeast-1.rds.amazonaws.com/crypto"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 db = SQLAlchemy(app)
@@ -108,9 +109,7 @@ for crypto in cryptos:
     avgopen = 0
     for x in range (1,30):
         for y in prevdays:
-            # print(test_data.iloc[((len(test_data)-1)+x)-y])
             high_ofprevMonth = test_data.iloc[((len(test_data)-1)+x)-y]['high']
-            # print(high_ofprevMonth)
             avghigh = (avghigh + high_ofprevMonth)
             low_ofprevMonth = test_data.iloc[((len(test_data)-1)+x)-y]['low']
             avglow = (avglow + low_ofprevMonth)
@@ -121,7 +120,6 @@ for crypto in cryptos:
             open_ofprevMonth = test_data.iloc[((len(test_data)-1)+x)-y]['open']
             avgopen = (avgopen + open_ofprevMonth)
         avghigh = avghigh/len(prevdays)
-        # print(avghigh)
         avglow = avglow/len(prevdays)
         avgvolumefrom = avgvolumefrom/len(prevdays)
         avgvolumeto = avgvolumeto/len(prevdays)
@@ -131,24 +129,7 @@ for crypto in cryptos:
     saved_final_prediction = load_model('ai models/Final prediction model'+crypto)
 
     unseen_predictions = predict_model(saved_final_prediction, data = test_data)
-    # unseen_predictions = unseen_predictions.append({'high' : 0, 'low' : 0, 'volumefrom' : 0, 'Future_price' : 0, 'prediction_label' : 0},ignore_index = True)
-    # unseen_predictions['prediction_price']=unseen_predictions[['prediction_label']].shift(prediction_day)
-    unseen_predictions = unseen_predictions.replace(np.nan, 0)
-    print(unseen_predictions.tail(40))
-    # def line_plot(line1, line2, label1=None, label2=None, title='', lw=2, xlabel=None, ylabel=None):
-    #     fig, ax = plt.subplots(1, figsize=(13, 7))
-    #     ax.plot(line1, label=label1, linewidth=lw)
-    #     ax.plot(line2, label=label2, linewidth=lw)
-    #     ax.set_ylabel(xlabel, fontsize=14)
-    #     ax.set_title(title, fontsize=16)
-    #     ax.legend(loc='best', fontsize=16)
-    #     ax.set_ylabel(ylabel, fontsize=14)
-    # line_plot(unseen_predictions['open'].iloc[0:73], unseen_predictions['prediction_price'].iloc[1:],'actual','prediction', lw=3, xlabel='price[USD]')
-    # plt.show()
-    # line_plot(unseen_predictions['open'].iloc[0:73], unseen_predictions['prediction_label'].iloc[1:],'actual','prediction', lw=3, xlabel='price[USD]')
-    # plt.show()
-    # print(crypto)
-    
+    unseen_predictions = unseen_predictions.replace(np.nan, 0)    
     
     if crypto == 'BTC':
         for x in unseen_predictions['prediction_label']:
@@ -216,12 +197,10 @@ for article_info in response_info['articles']:
     articles.append([article_info['date'],  article_info['sentiment']['polarity'], article_info['sentiment']['subjectivity'], article_info['source'], article_info['subject'],  article_info['text'], article_info['title'], article_info['url']])
 
 article_df = pd.DataFrame(data=articles, columns=['date', 'polarity', 'subjectivity', 'source', 'subject', 'text', 'title', 'url'])
-# print(article_df)
 
 saved_final_sentiment = load_model('ai models/Final sentiment model')
 
 unseen_predictions_sentiment = predict_model(saved_final_sentiment, data=article_df)
-# print(unseen_predictions_sentiment)
 count = 0
 for x in unseen_predictions_sentiment['prediction_label']:
     num = count
@@ -288,9 +267,10 @@ def crypto_percentage():
     sentiment['negative']=round(count_negative)
     sentiment['neutral']=round(count_neutral)
     sentimentlist.append(sentiment)
-    print(sentiment)
     return jsonify(sentimentlist)
 
-port = int(os.environ.get('PORT', 5000))
+# port = int(os.environ.get('PORT', 5000))
 if __name__ == '__main__':
-    app.run(debug=True,host='localhost', port=port)
+    serve(app, host='0.0.0.0', port=5000)
+# def create_app():
+#    return app
