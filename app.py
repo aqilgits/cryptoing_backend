@@ -16,8 +16,8 @@ from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 import matplotlib.pyplot as plt
 import joblib
 
-joblib.memory.MemorizedFunc.cache_backend = 'memory'
 app = Flask(__name__)
+joblib.memory.MemorizedFunc.cache_backend = 'memory'
 app.app_context().push()
 
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://cryptohit:Loqilsemangat00.@cryptohitproject.cmrqv61hfhf4.ap-southeast-1.rds.amazonaws.com/crypto"
