@@ -14,7 +14,9 @@ from flask_marshmallow import Marshmallow
 from requests import Request, Session
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 import matplotlib.pyplot as plt
+import joblib
 
+joblib.memory.MemorizedFunc.cache_backend = 'memory'
 app = Flask(__name__)
 app.app_context().push()
 
